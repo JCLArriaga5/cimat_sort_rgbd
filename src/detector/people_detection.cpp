@@ -118,7 +118,6 @@ int main (int argc, char** argv)
         return print_help();
 
   // Algorithm parameters:
-  // std::string svm_filename = "/home/ligthsaber/Documents/Jose_Carlos_Files/cimat_sort_rgbd/utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
   std::string svm_filename = "/utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
   float min_confidence = -1.5;
 //  float min_height = 1.3;
@@ -126,8 +125,6 @@ int main (int argc, char** argv)
   float voxel_size = 0.06;
   Eigen::Matrix3f rgb_intrinsics_matrix;
     rgb_intrinsics_matrix << 525, 0.0, 316.7, 0.0, 525, 238.5, 0.0, 0.0, 1.0; // Kinect RGB camera intrinsics
-//  rgb_intrinsics_matrix << 525, 0.0, 319.5, 0.0, 525, 239.5, 0.0, 0.0, 1.0; // Kinect RGB camera intrinsics
-//  rgb_intrinsics_matrix << 516.27251, 0.0, 319.21872, 0.0, 516.52227, 225.29767, 0.0, 0.0, 1.0; // Kinect RGB camera intrinsics
 
   // Read if some parameters are passed from command line:
   pcl::console::parse_argument (argc, argv, "--svm", svm_filename);
@@ -233,7 +230,7 @@ int main (int argc, char** argv)
           std::vector<int> indices_ = clusters_indices.indices;
           for (unsigned int i = 0; i < indices_.size(); i++)
           {
-              std::cout << indices_[i] << " People Bounding Box" << std::endl;
+              std::cout << indices_[i] << " People Bounding Box" << std::endl; // Check
           }
         }
         }

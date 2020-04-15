@@ -103,7 +103,6 @@ int main (int argc, char** argv)
   ros::spin ();
 
   // Algorithm parameters:
-  // std::string svm_filename = "/home/ligthsaber/Documents/Jose_Carlos_Files/cimat_sort_rgbd/utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
   std::string svm_filename = "/utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
   float min_confidence = -1.5;
   float voxel_size = 0.06;

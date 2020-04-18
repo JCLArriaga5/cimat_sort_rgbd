@@ -112,10 +112,4 @@ int main (int argc, char** argv)
   // Read if some parameters are passed from command line:
   pcl::console::parse_argument (argc, argv, "--svm", svm_filename);
   pcl::console::parse_argument (argc, argv, "--conf", min_confidence);
-
-  // Read Kinect live stream:
-  // PointCloudT::Ptr cloud (new PointCloudT);
-  // bool new_cloud_available_flag = false;
-  // boost::function<void (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)> f =
-  //         boost::bind(&cloud_cb_, _1, cloud, &new_cloud_available_flag);
 }

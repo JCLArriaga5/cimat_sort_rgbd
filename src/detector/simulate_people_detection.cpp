@@ -7,6 +7,9 @@
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/console/parse.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/people/ground_based_people_detection_app.h>
 #include <pcl/common/time.h>
@@ -52,6 +55,8 @@ pp_callback (const pcl::visualization::PointPickingEvent& event, void* args)
 
 void gp_estimation_clicked_points (const pcl::PointCloud<PointT> &callback_cloud)
 {
+  // Errors when estimating the ground plane with clicked points, reviewing it and correcting it.
+
   // Initialize Viewer
   viewer->initCameraParameters ();
   viewer->removeAllPointClouds();
@@ -93,14 +98,57 @@ void gp_estimation_clicked_points (const pcl::PointCloud<PointT> &callback_cloud
   return;
 }
 
+void gp_estimation_floor (const pcl::PointCloud<PointT> &callback_cloud)
+{
+  // Initialize Viewer
+  viewer->initCameraParameters ();
+  viewer->removeAllPointClouds();
+  viewer->addCoordinateSystem(1.0);
+
+  pcl::PointCloud<PointT>::Ptr cloud (new pcl::PointCloud<PointT>);
+  pcl::PointCloud<PointT>::Ptr floor (new pcl::PointCloud<PointT>);
+  *cloud = callback_cloud;
+
+  pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(cloud);
+  viewer->addPointCloud<PointT> (cloud, rgb);
+  viewer->setCameraPosition(0,0,-2,0,-1,0,0);
+
+  // Floor segmentation
+  ground_coeffs.resize(4);
+  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  pcl::SACSegmentation<PointT> seg; // Create the segmentation object
+  seg.setOptimizeCoefficients (true);
+  seg.setModelType (pcl::SACMODEL_PLANE);
+  seg.setMethodType (pcl::SAC_RANSAC);
+  seg.setDistanceThreshold (0.01);
+  seg.setInputCloud (cloud);
+  seg.segment (*inliers, *coefficients);
+
+  ground_coeffs[0] = coefficients->values[0];
+  ground_coeffs[1] = coefficients->values[1];
+  ground_coeffs[2] = coefficients->values[2];
+  ground_coeffs[3] = coefficients->values[3];
+
+  std::cout << "Press 'Q' to finish the ground plane estimation stage..." << std::endl;
+
+  // Spin until 'Q' is pressed:
+  viewer->spin();
+  std::cout << "done." << std::endl;
+}
+
 void cloud_cb (const PointCloudT::ConstPtr& input)
 {
   // Convert the sensor_msgs/PointCloud2 data to pcl/PointCloud
   pcl::PointCloud<PointT> callback_cloud;
   pcl::fromROSMsg (*input, callback_cloud);
 
-  // Proofs generate ground plane estimation with clicked_points
-  gp_estimation_clicked_points(callback_cloud);
+  // Proofs generate ground plane estimation with clicked_points (With errors - Check)
+  // gp_estimation_clicked_points(callback_cloud);
+
+  // Proofs generate ground plane whith floor
+  gp_estimation_floor(callback_cloud);
+
   std::cout << "Ground plane: " << ground_coeffs(0) << " " << ground_coeffs(1) << " " << ground_coeffs(2) << " " << ground_coeffs(3) << std::endl;
 
   // setting alpha = 1.0 for rviz

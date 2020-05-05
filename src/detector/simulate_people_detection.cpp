@@ -18,13 +18,28 @@ typedef pcl::PointXYZRGBA PointT;
 typedef sensor_msgs::PointCloud2 PointCloudT;
 
 // PCL viewer //
-boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("PCL Viewer"));
+pcl::visualization::PCLVisualizer viewer ("PCL Viewer");
 
 // Mutex: //
 boost::mutex cloud_mutex;
 
 // Ground plane init //
 Eigen::VectorXf ground_coeffs;
+
+// Callback cloud init
+pcl::PointCloud<PointT> callback_cloud;
+pcl::PointCloud<PointT>::Ptr cloud (new pcl::PointCloud<PointT>);
+
+// Create classifier for people detection:
+pcl::people::PersonClassifier<pcl::RGB> person_classifier;
+
+// People detection app initialization:
+pcl::people::GroundBasedPeopleDetectionApp<PointT> people_detector;    // people detection object
+
+// Algorithm parameters:
+std::string svm_filename = "/home/ligthsaber/catkin_ws/src/cimat_sort_rgbd/utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
+float min_confidence = -1.5;
+float voxel_size = 0.06;
 
 ros::Publisher pub;
 
@@ -33,7 +48,7 @@ enum { COLS = 640, ROWS = 480 };
 struct callback_args{
   // structure used to pass arguments to the callback function
   pcl::PointCloud<PointT>::Ptr clicked_points_3d;
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewerPtr;
+  pcl::visualization::PCLVisualizer::Ptr viewerPtr;
 };
 
 void
@@ -58,9 +73,9 @@ void gp_estimation_clicked_points (const pcl::PointCloud<PointT> &callback_cloud
   // Errors when estimating the ground plane with clicked points, reviewing it and correcting it.
 
   // Initialize Viewer
-  viewer->initCameraParameters ();
-  viewer->removeAllPointClouds();
-  viewer->addCoordinateSystem(1.0);
+  viewer.initCameraParameters ();
+  viewer.removeAllPointClouds();
+  viewer.addCoordinateSystem(1.0);
 
   // Display pointcloud:
   cloud_mutex.lock ();    // for not overwriting the point cloud
@@ -69,8 +84,8 @@ void gp_estimation_clicked_points (const pcl::PointCloud<PointT> &callback_cloud
   *cloud = callback_cloud;
 
   pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(cloud);
-  viewer->addPointCloud<PointT> (cloud, rgb);
-  viewer->setCameraPosition(0,0,-2,0,-1,0,0);
+  viewer.addPointCloud<PointT> (cloud, rgb);
+  viewer.setCameraPosition(0,0,-2,0,-1,0,0);
 
   // Add point picking callback to viewer:
   struct callback_args cb_args;
@@ -78,12 +93,12 @@ void gp_estimation_clicked_points (const pcl::PointCloud<PointT> &callback_cloud
   *clicked_points_3d = callback_cloud;
 
   cb_args.clicked_points_3d = clicked_points_3d;
-  cb_args.viewerPtr = pcl::visualization::PCLVisualizer::Ptr(viewer);
-  viewer->registerPointPickingCallback (pp_callback, (void*)&cb_args);
+  cb_args.viewerPtr = pcl::visualization::PCLVisualizer::Ptr(&viewer);
+  viewer.registerPointPickingCallback (pp_callback, (void*)&cb_args);
   std::cout << "Shift+click on three floor points, then press 'Q'..." << std::endl;
 
   // Spin until 'Q' is pressed:
-  viewer->spin();
+  viewer.spin();
   std::cout << "done." << std::endl;
 
   cloud_mutex.unlock ();
@@ -101,17 +116,16 @@ void gp_estimation_clicked_points (const pcl::PointCloud<PointT> &callback_cloud
 void gp_estimation_floor (const pcl::PointCloud<PointT> &callback_cloud)
 {
   // Initialize Viewer
-  viewer->initCameraParameters ();
-  viewer->removeAllPointClouds();
-  viewer->addCoordinateSystem(1.0);
+  // viewer.initCameraParameters ();
+  // viewer.removeAllPointClouds();
+  // viewer.addCoordinateSystem(1.0);
 
   pcl::PointCloud<PointT>::Ptr cloud (new pcl::PointCloud<PointT>);
-  pcl::PointCloud<PointT>::Ptr floor (new pcl::PointCloud<PointT>);
   *cloud = callback_cloud;
 
-  pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(cloud);
-  viewer->addPointCloud<PointT> (cloud, rgb);
-  viewer->setCameraPosition(0,0,-2,0,-1,0,0);
+  // pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(cloud);
+  // viewer.addPointCloud<PointT> (cloud, rgb);
+  // viewer.setCameraPosition(0,0,-2,0,-1,0,0);
 
   // Floor segmentation
   ground_coeffs.resize(4);
@@ -130,45 +144,89 @@ void gp_estimation_floor (const pcl::PointCloud<PointT> &callback_cloud)
   ground_coeffs[2] = coefficients->values[2];
   ground_coeffs[3] = coefficients->values[3];
 
-  std::cout << "Press 'Q' to finish the ground plane estimation stage..." << std::endl;
-
-  // Spin until 'Q' is pressed:
-  viewer->spin();
-  std::cout << "done." << std::endl;
+  // std::cout << "Press 'Q' to finish the ground plane estimation stage..." << std::endl;
+  //
+  // // Spin until 'Q' is pressed:
+  // viewer.spin();
+  // std::cout << "done." << std::endl;
 }
 
-void cloud_cb (const PointCloudT::ConstPtr& input)
+void detection (const PointCloudT::ConstPtr& input)
 {
+  Eigen::Matrix3f rgb_intrinsics_matrix;
+    rgb_intrinsics_matrix << 525, 0.0, 316.7, 0.0, 525, 238.5, 0.0, 0.0, 1.0; // Kinect RGB camera intrinsics
+
   // Convert the sensor_msgs/PointCloud2 data to pcl/PointCloud
-  pcl::PointCloud<PointT> callback_cloud;
   pcl::fromROSMsg (*input, callback_cloud);
-
-  // Proofs generate ground plane estimation with clicked_points (With errors - Check)
-  // gp_estimation_clicked_points(callback_cloud);
-
-  // Proofs generate ground plane whith floor
-  gp_estimation_floor(callback_cloud);
-
-  std::cout << "Ground plane: " << ground_coeffs(0) << " " << ground_coeffs(1) << " " << ground_coeffs(2) << " " << ground_coeffs(3) << std::endl;
+  *cloud = callback_cloud;
 
   // setting alpha = 1.0 for rviz
   for (size_t i = 0; i < callback_cloud.points.size(); ++i){
     callback_cloud.points[i].a = 255;
   }
 
+  // Proofs generate ground plane estimation with clicked_points (With errors - Check)
+  // gp_estimation_clicked_points(callback_cloud);
+
+  // Proofs generate ground plane whith floor segmentation
+  gp_estimation_floor(callback_cloud);
+  std::cout << "Ground plane: " << ground_coeffs(0) << " " << ground_coeffs(1) << " " << ground_coeffs(2) << " " << ground_coeffs(3) << std::endl;
+
+                              // Detections //
+  // Create classifier for people detection:
+  person_classifier.loadSVMFromFile(svm_filename);   // load trained SVM
+
+  people_detector.setVoxelSize(voxel_size);                        // set the voxel size
+  people_detector.setIntrinsics(rgb_intrinsics_matrix);            // set RGB camera intrinsic parameters
+  people_detector.setClassifier(person_classifier);                // set person classifier
+
+  // Perform people detection on the new cloud:
+  std::vector<pcl::people::PersonCluster<PointT> > clusters;   // vector containing persons clusters
+  people_detector.setInputCloud(cloud);
+  people_detector.setGround(ground_coeffs);                    // set floor coefficients
+  people_detector.compute(clusters);                           // perform people detection
+
+  ground_coeffs = people_detector.getGround();                 // get updated floor coefficients
+
+  // Draw cloud and people bounding boxes in the viewer:
+  viewer.removeAllPointClouds();
+  viewer.removeAllShapes();
+  pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(cloud);
+  viewer.addPointCloud<PointT> (cloud, rgb);
+  unsigned int k = 0;
+  for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end(); ++it)
+    {
+    if(it->getPersonConfidence() > min_confidence)             // draw only people with confidence above a threshold
+    {
+      // draw theoretical person bounding box in the PCL viewer:
+      it->drawTBoundingBox(viewer, k);
+      k++;
+
+      pcl::PointIndices clusters_indices = it->getIndices();
+      std::vector<int> indices_ = clusters_indices.indices;
+      for (unsigned int i = 0; i < indices_.size(); i++)
+      {
+          std::cout << indices_[i] << " People Bounding Box" << std::endl;
+      }
+    }
+    }
+  std::cout << k << " People found" << std::endl;
+  viewer.spinOnce();
 }
 
 int main (int argc, char** argv)
 {
+  // Initialize Viewer
+  viewer.initCameraParameters ();
+  viewer.removeAllPointClouds();
+  viewer.addCoordinateSystem(1.0);
+
   // Initialize ROS
   ros::init (argc, argv, "simulate_people_detection");
   ros::NodeHandle nh;
 
-  // Set ROS param
-  // ros::param::set("dist_th", 0.1);
-
   // Create a ROS subscriber for the input point cloud
-  ros::Subscriber sub = nh.subscribe ("input", 1, cloud_cb);
+  ros::Subscriber sub = nh.subscribe ("input", 1, detection);
 
   // Create a ROS publisher for the model coefficients
   pub = nh.advertise<pcl::PointCloud<PointT> > ("simulate_people_detection", 1);

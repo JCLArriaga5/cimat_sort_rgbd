@@ -22,8 +22,8 @@ include_directories(${catkin_INCLUDE_DIRS})
 # link_directories(${PCL_LIBRARY_DIRS})
 # add_definitions(${PCL_DEFINITIONS})
 
-add_executable(people_detection src/detector/people_detection.cpp)
-add_executable(simulate_people_detection src/detector/simulate_people_detection.cpp)
+add_executable(pcl_people_detection test/pcl_people_detector/pcl_people_detection.cpp)
+add_executable(simulate_pcl_people_detection test/pcl_people_detector/simulate_pcl_people_detection.cpp)
 
-target_link_libraries(people_detection ${catkin_LIBRARIES})
-target_link_libraries(simulate_people_detection ${catkin_LIBRARIES})
+target_link_libraries(pcl_people_detection ${catkin_LIBRARIES})
+target_link_libraries(simulate_pcl_people_detection ${catkin_LIBRARIES})

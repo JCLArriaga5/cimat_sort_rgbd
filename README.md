@@ -14,7 +14,7 @@ The program people_detector is the code created by [PCL](http://pointclouds.org/
 
 Execute following command:
 ```sh
-$ rosrun cimat_sort_rgbd people_detector
+$ rosrun cimat_sort_rgbd pcl_people_detection
 ```
 
 ## simulate_people_detection

@@ -6,15 +6,15 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
   roscpp
+  roslib
   sensor_msgs
+  eigen_conversions
+  tf_conversions
+  cmake_modules
 )
+find_package(Eigen REQUIRED)
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES pcl_ros_processing
-#  CATKIN_DEPENDS pcl_conversions pcl_ros roscpp sensor_msgs
-#  DEPENDS system_lib
-)
+catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS})
 
@@ -24,5 +24,8 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(people_detection src/detector/people_detection.cpp)
 add_executable(simulate_people_detection src/detector/simulate_people_detection.cpp)
+add_executable(only_pcl_visualization utils/only_pcl_visualization.cpp)
+
 target_link_libraries(people_detection ${catkin_LIBRARIES})
 target_link_libraries(simulate_people_detection ${catkin_LIBRARIES})
+target_link_libraries(only_pcl_visualization ${catkin_LIBRARIES})

@@ -10,7 +10,7 @@ $ catkin_make
 ```
 
 ## people_detection
-The program people_detector is the code created by [PCL](http://pointclouds.org/documentation/tutorials/ground_based_rgbd_people_detection.php) to detect people on a ground plane with RGB-D data, to test it requires having connected an rgbd sensor (e.g. Kinect, Realsense).
+The program people_detector is the code created by [PCL](https://pcl-tutorials.readthedocs.io/en/latest/ground_based_rgbd_people_detection.html#ground-based-rgbd-people-detection) to detect people on a ground plane with RGB-D data, to test it requires having connected an rgbd sensor (e.g. Kinect, Realsense).
 
 Execute following command:
 ```sh

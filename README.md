@@ -9,13 +9,13 @@ $ cd ..
 $ catkin_make
 ```
 
-## people_detection
-The program people_detector is the code created by [PCL](https://pcl-tutorials.readthedocs.io/en/latest/ground_based_rgbd_people_detection.html#ground-based-rgbd-people-detection) to detect people on a ground plane with RGB-D data, to test it requires having connected an rgbd sensor (e.g. Kinect, Realsense).
+## pcl_people_detection
+The program pcl_people_detector is the code created by [PCL](https://pcl-tutorials.readthedocs.io/en/latest/ground_based_rgbd_people_detection.html#ground-based-rgbd-people-detection) to detect people on a ground plane with RGB-D data, to test it requires having connected an rgbd sensor (e.g. Kinect, Realsense).
 
 Execute following command:
 ```sh
 $ rosrun cimat_sort_rgbd pcl_people_detection
 ```
 
-## simulate_people_detection
+## simulate_pcl_people_detection
 **Developing...**

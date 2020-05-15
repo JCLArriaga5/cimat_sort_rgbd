@@ -29,4 +29,4 @@ add_executable(dataset_pcl_people_detection test/pcl_people_detector/Dataset-Sim
 
 target_link_libraries(pcl_people_detection ${catkin_LIBRARIES})
 target_link_libraries(simulate_pcl_people_detection ${catkin_LIBRARIES})
-target_link_libraries (depth2pointcloud ${PCL_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries (dataset_pcl_people_detection ${PCL_LIBRARIES} ${OpenCV_LIBS})

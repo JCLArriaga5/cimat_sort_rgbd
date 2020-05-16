@@ -24,7 +24,7 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 pcl::visualization::PCLVisualizer viewer("PCL Viewer");
 
 // Dataset path
-string dataset_path = "../utils/dataset/epfl_lab/20140804_160621_00";
+string dataset_path = "../dataset/epfl_lab/20140804_160621_00";
 
 // Mutex: //
 boost::mutex cloud_mutex;
@@ -34,10 +34,9 @@ Eigen::VectorXf ground_coeffs;
 cv::Mat rgb_image;
 cv::Mat depth_image;
 char buffer [9];
-float min_confidence = -1.7;
+float min_confidence = -1.3;
 
 enum { COLS = 512, ROWS = 424 };
-// enum { COLS = 640, ROWS = 480 };
 
 struct callback_args{
   // structure used to pass arguments to the callback function
@@ -64,9 +63,12 @@ pp_callback (const pcl::visualization::PointPickingEvent& event, void* args)
 
 PointCloudT::Ptr depth2cloud( cv::Mat rgb_image, cv::Mat depth_image )
 {
-  float f = 570.3;
-  float cx = 256.0, cy = 212.0;
+  // Parameters
+  float fx = 365.8046307762528; // Values with intrinsics matrix
+  float fy = 365.80463336811664; // Values with intrinsics matrix
+  float cx = 254.31510758228475, cy = 206.98513348550657; // Values with intrinsics matrix
 
+  // Conversion
   PointCloudT::Ptr cloud_ptr( new PointCloudT () );
   cloud_ptr->width  = rgb_image.cols;
   cloud_ptr->height = rgb_image.rows;
@@ -78,8 +80,8 @@ PointCloudT::Ptr depth2cloud( cv::Mat rgb_image, cv::Mat depth_image )
       if ( depth_image.at<unsigned short>(y, x) != 0 )
       {
           pt.z = depth_image.at<unsigned short>(y, x) / 1000.0;
-          pt.x = (x - cx) * pt.z / f;
-          pt.y = (y - cy) * pt.z / f;
+          pt.x = (x - cx) * pt.z / fx;
+          pt.y = (y - cy) * pt.z / fy;
           pt.r = rgb_image.at<cv::Vec3b>(y, x)[2];
           pt.g = rgb_image.at<cv::Vec3b>(y, x)[1];
           pt.b = rgb_image.at<cv::Vec3b>(y, x)[0];
@@ -100,36 +102,17 @@ PointCloudT::Ptr depth2cloud( cv::Mat rgb_image, cv::Mat depth_image )
   return cloud_ptr;
 }
 
-void visualization(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, std::vector<pcl::people::PersonCluster<PointT> > clusters)
-{
-  // Display pointcloud:
-  viewer.removeAllPointClouds();
-  viewer.removeAllShapes();
-  pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(cloud);
-  viewer.addPointCloud<PointT> (cloud, rgb);
-  viewer.setCameraPosition(0,0,-2,0,-1,0,0);
-
-  unsigned int k = 0;
-  for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end(); ++it)
-  {
-    if(it->getPersonConfidence() > min_confidence)             // draw only people with confidence above a threshold
-    {
-      // draw theoretical person bounding box in the PCL viewer:
-      it->drawTBoundingBox(viewer, k);
-      k++;
-    }
-  }
-  std::cout << k << " People found" << std::endl;
-  viewer.spinOnce();
-}
-
 int main (int argc, char** argv)
 {
   // Algorithm parameters:
-  std::string svm_filename = "../utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
+  std::string svm_filename = "../people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
   float voxel_size = 0.06;
-  float min_height = 0.6;
-  float max_height = 1.8;
+  float min_height = 1.0;
+  float max_height = 2.0;
+  // Format of intrinsics matrix
+  // K = [fx 0 cx;
+  //      0 fy cy; intrinsics matrix
+  //      0  0  1]
   Eigen::Matrix3f rgb_intrinsics_matrix;
     rgb_intrinsics_matrix << 365.8046307762528, 0.0, 254.31510758228475, 0.0, 365.80463336811664, 206.98513348550657, 0.0, 0.0, 1.0; // Camera matrix of dataset epfl_lab
 

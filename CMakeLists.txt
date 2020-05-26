@@ -18,6 +18,7 @@ find_package(Eigen REQUIRED)
 catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS})
+include_directories(src/sort)
 
 include_directories(${PCL_INCLUDE_DIRS} ${OPENCV_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS} ${OPENCV_LIBRARY_DIRS})

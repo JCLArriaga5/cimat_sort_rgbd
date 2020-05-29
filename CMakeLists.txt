@@ -13,14 +13,14 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
   cmake_modules
 )
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(src/sort)
 
-include_directories(${PCL_INCLUDE_DIRS} ${OPENCV_INCLUDE_DIRS})
+include_directories(${PCL_INCLUDE_DIRS} ${OPENCV_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS} ${OPENCV_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS} ${OPENCV_DEFINITIONS})
 

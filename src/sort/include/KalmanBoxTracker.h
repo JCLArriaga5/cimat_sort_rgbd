@@ -3,6 +3,8 @@
 
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include <iostream>
+#include <Eigen/Dense>
 
 using namespace std;
 using namespace cv;
@@ -32,8 +34,7 @@ class KalmanBoxTracker{
 
     ~KalmanBoxTracker()
 	  {
-      history.resize(5);
-      history.setZero();
+      history.clear();
 	  }
 
     Eigen::VectorXf& predict();
@@ -48,12 +49,13 @@ class KalmanBoxTracker{
   	int hit_streak;
   	int age;
   	int id;
-    
+
   private:
     void init(Eigen::VectorXf x_vector_state);
     cv::KalmanFilter kf;
 	  cv::Mat measurement;
-    Eigen::VectorXf history;
+    std::vector<Eigen::VectorXf> history;
 };
 
 #endif
+

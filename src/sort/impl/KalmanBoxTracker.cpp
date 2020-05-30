@@ -1,4 +1,6 @@
 #include <KalmanBoxTracker.h>
+#include <iostream>
+#include <Eigen/Dense>
 
 int KalmanBoxTracker::_count_ = 0;
 
@@ -49,7 +51,13 @@ Eigen::VectorXf&
           hit_streak = 0;
   time_since_update += 1;
 
-	predictdet = p;
+	Eigen::VectorXf predictdet;
+  predictdet.resize(5);
+  predictdet[0] = p.at<float>(0, 0);
+  predictdet[1] = p.at<float>(1, 0);
+  predictdet[2] = p.at<float>(2, 0);
+  predictdet[3] = p.at<float>(3, 0);
+  predictdet[4] = p.at<float>(4, 0);
 
 	history.push_back(predictdet);
 	return history.back();
@@ -80,13 +88,14 @@ Eigen::VectorXf&
 {
 	Mat s = kf.statePost;
   Eigen::VectorXf state;
-  state.resize(5)
+  state.resize(5);
 
   state[0] = s.at<float>(0, 0);
   state[1] = s.at<float>(1, 0);
   state[2] = s.at<float>(2, 0);
   state[3] = s.at<float>(3, 0);
   state[4] = s.at<float>(4, 0);
-
+  
 	return  state;
 }
+

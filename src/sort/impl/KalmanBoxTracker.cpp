@@ -4,11 +4,10 @@
 
 int KalmanBoxTracker::_count_ = 0;
 
-void KalmanBoxTracker::init(Eigen::VectorXf x_vector_state)
+void KalmanBoxTracker::init(std::vector<float> x_vector_state)
 {
   int dim_x = 8;
   int dim_z = 5;
-  x_vector_state.resize(dim_z);
 
   kf = KalmanFilter(dim_x, dim_z, 0);
   measurement = Mat::zeros(dim_z, 1, CV_32F);
@@ -21,14 +20,15 @@ void KalmanBoxTracker::init(Eigen::VectorXf x_vector_state)
       0, 0, 0, 0, 0, 1, 0, 0,
       0, 0, 0, 0, 0, 0, 1, 0,
       0, 0, 0, 0, 0, 0, 0, 1);
-  kf.measurementMatrix = (Mat_<float>(dim_x, dim_z) <<
-      1, 0, 0, 0, 0, 0, 0,
-      0, 1, 0, 0, 0, 0, 0,
-      0, 0, 1, 0, 0, 0, 0,
-      0, 0, 0, 1, 0, 0, 0,
-      0, 0, 0, 0, 1, 0, 0);
-  setIdentity(kf.processNoiseCov, Scalar::all(100));
-	setIdentity(kf.measurementNoiseCov, Scalar::all(0.01));
+  // kf.measurementMatrix = *(Mat_<float>(dim_x, dim_z) <<
+  //     1, 0, 0, 0, 0, 0, 0,
+  //     0, 1, 0, 0, 0, 0, 0,
+  //     0, 0, 1, 0, 0, 0, 0,
+  //     0, 0, 0, 1, 0, 0, 0,
+  //     0, 0, 0, 0, 1, 0, 0);
+  setIdentity(kf.measurementMatrix);
+  setIdentity(kf.processNoiseCov, Scalar::all(1e-2));
+	setIdentity(kf.measurementNoiseCov, Scalar::all(1e-1));
 	setIdentity(kf.errorCovPost, Scalar::all(1));
 
   // initialization of vector sate [u, v, w, h, gamma]
@@ -40,8 +40,7 @@ void KalmanBoxTracker::init(Eigen::VectorXf x_vector_state)
 }
 
 // Predict
-Eigen::VectorXf&
- KalmanBoxTracker::predict()
+std::vector<float> KalmanBoxTracker::predict()
 {
 	// predict
 	Mat p = kf.predict();
@@ -51,8 +50,8 @@ Eigen::VectorXf&
           hit_streak = 0;
   time_since_update += 1;
 
-	Eigen::VectorXf predictdet;
-  predictdet.resize(5);
+	std::vector<float> predictdet(5);
+
   predictdet[0] = p.at<float>(0, 0);
   predictdet[1] = p.at<float>(1, 0);
   predictdet[2] = p.at<float>(2, 0);
@@ -64,7 +63,7 @@ Eigen::VectorXf&
 }
 
 // Update
-void KalmanBoxTracker::update(Eigen::VectorXf x_vector_state)
+void KalmanBoxTracker::update(std::vector<float> x_vector_state)
 {
 	time_since_update = 0;
 	history.clear();
@@ -83,19 +82,17 @@ void KalmanBoxTracker::update(Eigen::VectorXf x_vector_state)
 }
 
 // Return the current state vector
-Eigen::VectorXf&
+std::vector<float>&
  KalmanBoxTracker::get_state()
 {
 	Mat s = kf.statePost;
-  Eigen::VectorXf state;
-  state.resize(5);
+  std::vector<float> state(5);
 
   state[0] = s.at<float>(0, 0);
   state[1] = s.at<float>(1, 0);
   state[2] = s.at<float>(2, 0);
   state[3] = s.at<float>(3, 0);
   state[4] = s.at<float>(4, 0);
-  
-	return  state;
-}
 
+	return state;
+}

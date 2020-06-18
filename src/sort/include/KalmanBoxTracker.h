@@ -13,7 +13,7 @@ class KalmanBoxTracker{
   public:
     KalmanBoxTracker()
     {
-      init(Eigen::VectorXf());
+      init(std::vector<float>());
       time_since_update = 0;
       id = _count_;
       hits = 0;
@@ -21,7 +21,7 @@ class KalmanBoxTracker{
       age = 0;
     }
 
-    KalmanBoxTracker(Eigen::VectorXf x_vector_state)
+    KalmanBoxTracker(std::vector<float> x_vector_state)
     {
       init(x_vector_state);
       time_since_update = 0;
@@ -37,11 +37,11 @@ class KalmanBoxTracker{
       history.clear();
 	  }
 
-    Eigen::VectorXf& predict();
+    std::vector<float> predict();
 
-    void update(Eigen::VectorXf x_vector_state);
+    void update(std::vector<float> x_u);
 
-    Eigen::VectorXf& get_state();
+    std::vector<float>& get_state();
 
     static int _count_;
     int time_since_update;
@@ -51,11 +51,10 @@ class KalmanBoxTracker{
   	int id;
 
   private:
-    void init(Eigen::VectorXf x_vector_state);
+    void init(std::vector<float> x_vector_state);
     cv::KalmanFilter kf;
 	  cv::Mat measurement;
-    std::vector<Eigen::VectorXf> history;
+    std::vector<float> history;
 };
 
 #endif
-

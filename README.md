@@ -18,4 +18,4 @@ $ rosrun cimat_sort_rgbd pcl_people_detection
 ```
 
 ## simulate_pcl_people_detection
-**Developing...**
+To simulate the plc detector, using an RGB-D image dataset it is necessary to download the dataset previously. For the simulation with a dataset, we make use of the EPFL-LAB dataset, [here](../master/test/pcl_people_detector/Dataset-Simulation/README.md) you can see where to download it.

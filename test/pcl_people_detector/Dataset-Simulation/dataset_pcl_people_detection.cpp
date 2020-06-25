@@ -24,7 +24,7 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 pcl::visualization::PCLVisualizer viewer("PCL Viewer");
 
 // Dataset path
-string dataset_path = "../dataset/epfl_lab/20140804_160621_00";
+string dataset_path = "../utils/dataset/epfl_lab/20140804_160621_00";
 
 // Mutex: //
 boost::mutex cloud_mutex;
@@ -105,10 +105,10 @@ PointCloudT::Ptr depth2cloud( cv::Mat rgb_image, cv::Mat depth_image )
 int main (int argc, char** argv)
 {
   // Algorithm parameters:
-  std::string svm_filename = "../people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
+  std::string svm_filename = "../utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
   float voxel_size = 0.06;
   float min_height = 1.0;
-  float max_height = 2.0;
+  float max_height = 1.87;
   // Format of intrinsics matrix
   // K = [fx 0 cx;
   //      0 fy cy; intrinsics matrix
@@ -207,7 +207,7 @@ int main (int argc, char** argv)
 
     cloud_mutex.unlock ();
 
-    if (frame >= 949){
+    if (frame >= 948){
       break;
     }
 

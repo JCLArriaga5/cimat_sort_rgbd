@@ -35,8 +35,7 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 pcl::visualization::PCLVisualizer viewer("PCL Viewer");
 
 // Dataset path
-string dataset_path = "../dataset/epfl_lab/20140804_160621_00";
-string dataset_path_pcd = "../dataset/epfl_lab/pcd_files";
+string dataset_path = "../utils/dataset/epfl_lab/20140804_160621_00";
 
 // Mutex: //
 boost::mutex cloud_mutex;
@@ -214,7 +213,7 @@ int main (int argc, char** argv)
 	xstate_file.open(xsf.c_str());
 
   // Algorithm parameters:
-  std::string svm_filename = "../people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
+  std::string svm_filename = "../utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
   float voxel_size = 0.06;
   float min_height = 1.0;
   float max_height = 1.87; //1.87

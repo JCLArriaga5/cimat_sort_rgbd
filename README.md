@@ -1,6 +1,8 @@
 # cimat_sort_rgbd
 A ROS package to detect rgbd people with [SORT](https://github.com/abewley/sort) (Simple Online and Realtime Tracking) algorithm.
 
+Developing ...
+
 ## Instalation
 ```sh
 $ cd ~/catkin_ws/src

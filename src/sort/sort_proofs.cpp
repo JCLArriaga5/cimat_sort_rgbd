@@ -35,7 +35,8 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 pcl::visualization::PCLVisualizer viewer("PCL Viewer");
 
 // Dataset path
-string dataset_path = "../utils/dataset/epfl_lab/20140804_160621_00";
+string dataset_path = "../dataset/epfl_lab/20140804_160621_00";
+string dataset_path_pcd = "../dataset/epfl_lab/pcd_files";
 
 // Mutex: //
 boost::mutex cloud_mutex;
@@ -60,8 +61,8 @@ double iou(std::vector<float> data_test,  std::vector<float> data_gt)
   float yd = data_test[1] - data_gt[1];
   float zd = data_test[2] - data_gt[2];
 
-  float r = std::max(data_test[4], data_gt[4]);
-  float d = sqrt(pow(xd, 2) + pow(yd, 2));
+  float r = sqrt(2) / 4;
+  float d = sqrt(pow(xd, 2) + pow(yd, 2) + pow(zd, 2));
 
   // if the distance between centers is greater than or equal to the diameter
   // of the circle there is no intersection between the circles
@@ -198,7 +199,8 @@ int main (int argc, char** argv)
   KalmanBoxTracker::_count_ = 0;
 
   // variables for SORT
-  std::vector<std::vector<std::vector<float> > > dets;
+  std::vector<std::vector<Tracking_X> > dets;
+  std::vector<Tracking_X> vx_tmp;
 	std::vector<std::vector<float> > predicted_dets;
 	std::vector<std::vector<double> > iou_mx;
 	std::vector<int> assignment;
@@ -213,7 +215,7 @@ int main (int argc, char** argv)
 	xstate_file.open(xsf.c_str());
 
   // Algorithm parameters:
-  std::string svm_filename = "../utils/people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
+  std::string svm_filename = "../people/data/trainedLinearSVMForPeopleDetectionWithHOG.yaml";
   float voxel_size = 0.06;
   float min_height = 1.0;
   float max_height = 1.87; //1.87
@@ -272,6 +274,7 @@ int main (int argc, char** argv)
   people_detector.setIntrinsics(rgb_intrinsics_matrix);            // set RGB camera intrinsic parameters
   people_detector.setClassifier(person_classifier);                // set person classifier
   people_detector.setPersonClusterLimits(min_height, max_height, 0.1, 8.0);  // set person classifier
+  unsigned int n_dets = 0;
 
   // Main loop:
   while (true)
@@ -314,51 +317,69 @@ int main (int argc, char** argv)
         TTop[1] = tmp[1];
         TTop[2] = tmp[2];
 
+        Tracking_X x_tmp;
         std::vector<float> x = x_state(TTop, Height);
-        dets[frame].push_back(x);
         // drawTCylinderBox(viewer, x, k);
-        if (trackers.size() == 0) // the first frame met
-        {
-          // initialize kalman trackers using first detections.
-          KalmanBoxTracker trk(x);
-          trackers.push_back(trk);
-          continue;
-        }
+
+        x_tmp.x = x;
+        vx_tmp.push_back(x_tmp);
+        dets.push_back(vx_tmp);
+
         k++;
       }
     }
     std::cout << k << " People found with pcl detector" << std::endl;
     viewer.spinOnce();
-    cloud_mutex.unlock ();
+
+    if (trackers.size() == 0 && k != 0) // the first frame met
+		{
+			// initialize kalman trackers using first detections.
+			for (unsigned int i = 0; i < k; i++)
+			{
+        std::cout << "flag 1" << '\n';
+        KalmanBoxTracker trk(dets[n_dets][i].x);
+        trackers.push_back(trk);
+			}
+		}
 
     // Get predicted locations from existing trackers.
     predicted_dets.clear();
     for (std::vector<KalmanBoxTracker>::iterator pred = trackers.begin(); pred != trackers.end();)
 		{
 			std::vector<float> pX = pred->predict();
-      if (pX[0] >= 0 && pX[1] >= 0 && pX[2] >= 0){
+      if (pX[0] != 0 && pX[1] != 0 && pX[2] != 0){
+        std::cout << "flag 2" << '\n';
         predicted_dets.push_back(pX);
         pred++;
       }
       else{
+        std::cout << "flag 3" << '\n';
         pred = trackers.erase(pred);
       }
 		}
 
     // Associate detections to tracked object
     trk_num = predicted_dets.size();
-		det_num = dets[frame].size();
+		det_num = k;
     iou_mx.clear();
-		iou_mx.resize(trk_num, std::vector<double>(k, 0));
+		iou_mx.resize(trk_num, std::vector<double>(det_num, 0));
     // compute iou matrix as a distance matrix
     for (unsigned int i = 0; i < trk_num; i++)
 		{
 			for (unsigned int j = 0; j < det_num; j++)
 			{
+        std::cout << "flag 4" << '\n';
 				// Use (1 - iou) because the hungarian algorithm computes a minimum-cost assignment.
-				iou_mx[i][j] = 1 - iou(predicted_dets[i], dets[frame][j]);
+				iou_mx[i][j] = 1 - iou(predicted_dets[i], dets[n_dets][j].x);
+        std::cout << iou_mx[i][j] << '\n';
 			}
 		}
+
+    if (dets.size() > 0)
+    {
+      std::cout << "flag 5" << '\n';
+      n_dets++;
+    }
 
     // The sequence has 948 frames.
     if (frame >= 948){
@@ -367,6 +388,7 @@ int main (int argc, char** argv)
 
     // Increase frame for visualize point cloud of dataset
     ++frame;
+    cloud_mutex.unlock ();
   }
   return 0;
 }

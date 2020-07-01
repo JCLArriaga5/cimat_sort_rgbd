@@ -60,9 +60,10 @@ double iou(std::vector<float> data_test,  std::vector<float> data_gt)
   float xd = data_test[0] - data_gt[0];
   float yd = data_test[1] - data_gt[1];
   float zd = data_test[2] - data_gt[2];
-
+  // Because for draw bounding cube the value of set dimension is (0.5 u).
   float r = sqrt(2) / 4;
-  float d = sqrt(pow(xd, 2) + pow(yd, 2) + pow(zd, 2));
+  // for coordinate system, the axes that correspond to plane  2D is x-axe and z-axe.
+  float d = sqrt(pow(xd, 2) + pow(zd, 2));
 
   // if the distance between centers is greater than or equal to the diameter
   // of the circle there is no intersection between the circles
@@ -240,6 +241,7 @@ int main (int argc, char** argv)
   pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(cloud_init);
   viewer.addPointCloud<PointT> (cloud_init, rgb);
   viewer.setCameraPosition(0,0,-2,0,-1,0,0);
+  // viewer.addCoordinateSystem(1.0);
 
   // Add point picking callback to viewer:
   struct callback_args cb_args;
@@ -337,7 +339,7 @@ int main (int argc, char** argv)
 			for (unsigned int i = 0; i < k; i++)
 			{
         std::cout << "flag 1" << '\n';
-        KalmanBoxTracker trk(dets[n_dets][i].x);
+        KalmanBoxTracker trk(dets[dets.size() - 1][i].x);
         trackers.push_back(trk);
 			}
 		}
@@ -370,16 +372,10 @@ int main (int argc, char** argv)
 			{
         std::cout << "flag 4" << '\n';
 				// Use (1 - iou) because the hungarian algorithm computes a minimum-cost assignment.
-				iou_mx[i][j] = 1 - iou(predicted_dets[i], dets[n_dets][j].x);
+				iou_mx[i][j] = 1 - iou(predicted_dets[i], dets[dets.size() - 1][j].x);
         std::cout << iou_mx[i][j] << '\n';
 			}
 		}
-
-    if (dets.size() > 0)
-    {
-      std::cout << "flag 5" << '\n';
-      n_dets++;
-    }
 
     // The sequence has 948 frames.
     if (frame >= 948){

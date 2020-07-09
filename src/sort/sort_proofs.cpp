@@ -207,6 +207,8 @@ int main (int argc, char** argv)
 	std::vector<int> assignment;
 	std::set<int> unmatchedDetections;
 	std::set<int> unmatchedTrajectories;
+  std::set<int> allItems;
+	std::set<int> matchedItems;
 	unsigned int trk_num = 0;
 	unsigned int det_num = 0;
 
@@ -307,6 +309,7 @@ int main (int argc, char** argv)
     viewer.setCameraPosition(0,0,-2,0,-1,0,0);
 
     unsigned int k = 0;
+    vx_tmp.clear();
     for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end(); ++it)
     {
       // Get x_state, for detections that meet the pcl threshold
@@ -329,7 +332,17 @@ int main (int argc, char** argv)
 
         k++;
       }
+      // // if there are no detections in the frame, stack the vector of zeros in dets
+      // else
+      // {
+      //   Tracking_X x_zeros;
+      //   std::vector<float> vzeros(5, 0.0);
+      //   x_zeros.x = vzeros;
+      //   vx_tmp.push_back(x_zeros);
+      //   dets.push_back(vx_tmp);
+      // }
     }
+
     std::cout << k << " People found with pcl detector" << std::endl;
     viewer.spinOnce();
 
@@ -373,9 +386,23 @@ int main (int argc, char** argv)
         std::cout << "flag 4" << '\n';
 				// Use (1 - iou) because the hungarian algorithm computes a minimum-cost assignment.
 				iou_mx[i][j] = 1 - iou(predicted_dets[i], dets[dets.size() - 1][j].x);
-        std::cout << iou_mx[i][j] << '\n';
+        std::cout << "minimum-cost: " << iou_mx[i][j] << std::endl;
 			}
 		}
+
+    // // Solve the assignment problem using hungarian algorithm.
+    HungarianAlgorithm linear_assignment;
+		assignment.clear();
+    if  (iou_mx.size() != 0){
+      std::cout << "flag 5 - Hungarian" << '\n';
+      linear_assignment.Solve(iou_mx, assignment);
+    }
+
+    // Find matches, unmatched_detections and unmatched_predictions
+    unmatchedTrajectories.clear();
+		unmatchedDetections.clear();
+		allItems.clear();
+		matchedItems.clear();
 
     // The sequence has 948 frames.
     if (frame >= 948){

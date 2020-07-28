@@ -41,7 +41,7 @@ class KalmanBoxTracker{
 
     void update(std::vector<float> x_u);
 
-    std::vector<float>& get_state();
+    std::vector<float> get_state();
 
     static int _count_;
     int time_since_update;
@@ -54,7 +54,7 @@ class KalmanBoxTracker{
     void init(std::vector<float> x_vector_state);
     cv::KalmanFilter kf;
 	  cv::Mat measurement;
-    std::vector<float> history;
+    std::vector<std::vector<float> > history;
 };
 
 #endif

@@ -82,8 +82,7 @@ void KalmanBoxTracker::update(std::vector<float> x_vector_state)
 }
 
 // Return the current state vector
-std::vector<float>&
- KalmanBoxTracker::get_state()
+std::vector<float> KalmanBoxTracker::get_state()
 {
 	Mat s = kf.statePost;
   std::vector<float> state(5);

@@ -33,5 +33,5 @@ add_executable(sort_proofs src/sort/sort_proofs.cpp ${SOURCE_FILES})
 
 target_link_libraries(pcl_people_detection ${catkin_LIBRARIES})
 target_link_libraries(gazebo_pcl_people_detection ${catkin_LIBRARIES})
-target_link_libraries (dataset_pcl_people_detection ${PCL_LIBRARIES} ${OpenCV_LIBS})
-target_link_libraries (sort_proofs ${PCL_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(dataset_pcl_people_detection ${PCL_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(sort_proofs ${PCL_LIBRARIES} ${OpenCV_LIBS})

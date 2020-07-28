@@ -51,7 +51,8 @@ float min_confidence = -1.3;
 enum { COLS = 512, ROWS = 424 };
 
 typedef struct Tracking_X{
-  std::vector<float> x;
+  std::vector<float> v_x_;
+  int p_id;
 }Tracking_X;
 
 // Intersection over Union (IoU) for bounding circles
@@ -99,7 +100,8 @@ std::vector<float> x_state (std::vector<float> &TTop, double &Height){
 }
 
 // Function to draw the bounding cylinder
-void drawTCylinderBox(pcl::visualization::PCLVisualizer& viewer, std::vector<float> &x, int person_number){
+void drawTCylinderBox(pcl::visualization::PCLVisualizer& viewer, std::vector<float> &x,
+  int person_number, std::vector<float> &_rgb_){
 
   pcl::ModelCoefficients coeffs_cylinder;
   // Plot Cylinder //
@@ -115,13 +117,9 @@ void drawTCylinderBox(pcl::visualization::PCLVisualizer& viewer, std::vector<flo
   std::stringstream bbox_name;
   bbox_name << "bbox_person_" << person_number;
 
-  float r_ = (rand()%255 / 255.0) * person_number;
-  float g_ = (rand()%255 / 255.0) * person_number;
-  float b_ = (rand()%255 / 255.0) * person_number;
-
   viewer.removeShape (bbox_name.str());
   viewer.addCylinder(coeffs_cylinder, bbox_name.str());
-  viewer.setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 1, 0, 0, bbox_name.str());
+  viewer.setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, _rgb_[0], _rgb_[1], _rgb_[2], bbox_name.str());
   viewer.setShapeRenderingProperties (pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 1.3, bbox_name.str());
 }
 
@@ -209,6 +207,8 @@ int main (int argc, char** argv)
 	std::set<int> unmatchedTrajectories;
   std::set<int> allItems;
 	std::set<int> matchedItems;
+  std::vector<cv::Point> matchedPairs;
+  std::vector<Tracking_X> Tracking_result;
 	unsigned int trk_num = 0;
 	unsigned int det_num = 0;
 
@@ -301,15 +301,18 @@ int main (int argc, char** argv)
 
     ground_coeffs = people_detector.getGround();                 // get updated floor coefficients
 
-    // Display pointcloud:
+    // // Display pointcloud:
     viewer.removeAllPointClouds();
-    viewer.removeAllShapes();
+    // viewer.removeAllShapes();
     pcl::visualization::PointCloudColorHandlerRGBField<PointT> rgb(cloud);
     viewer.addPointCloud<PointT> (cloud, rgb);
     viewer.setCameraPosition(0,0,-2,0,-1,0,0);
 
     unsigned int k = 0;
     vx_tmp.clear();
+    frame_count++;
+
+    // Get detections
     for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end(); ++it)
     {
       // Get x_state, for detections that meet the pcl threshold
@@ -324,23 +327,13 @@ int main (int argc, char** argv)
 
         Tracking_X x_tmp;
         std::vector<float> x = x_state(TTop, Height);
-        // drawTCylinderBox(viewer, x, k);
 
-        x_tmp.x = x;
+        x_tmp.v_x_ = x;
         vx_tmp.push_back(x_tmp);
         dets.push_back(vx_tmp);
 
         k++;
       }
-      // // if there are no detections in the frame, stack the vector of zeros in dets
-      // else
-      // {
-      //   Tracking_X x_zeros;
-      //   std::vector<float> vzeros(5, 0.0);
-      //   x_zeros.x = vzeros;
-      //   vx_tmp.push_back(x_zeros);
-      //   dets.push_back(vx_tmp);
-      // }
     }
 
     std::cout << k << " People found with pcl detector" << std::endl;
@@ -351,8 +344,8 @@ int main (int argc, char** argv)
 			// initialize kalman trackers using first detections.
 			for (unsigned int i = 0; i < k; i++)
 			{
-        std::cout << "flag 1" << '\n';
-        KalmanBoxTracker trk(dets[dets.size() - 1][i].x);
+        std::cout << "flag 1 - initialize Kalman" << '\n';
+        KalmanBoxTracker trk(dets[dets.size() - 1][i].v_x_);
         trackers.push_back(trk);
 			}
 		}
@@ -363,12 +356,12 @@ int main (int argc, char** argv)
 		{
 			std::vector<float> pX = pred->predict();
       if (pX[0] != 0 && pX[1] != 0 && pX[2] != 0){
-        std::cout << "flag 2" << '\n';
+        std::cout << "flag 2 - predicted" << '\n';
         predicted_dets.push_back(pX);
         pred++;
       }
       else{
-        std::cout << "flag 3" << '\n';
+        std::cout << "flag 3 - erase predictions" << '\n';
         pred = trackers.erase(pred);
       }
 		}
@@ -383,10 +376,10 @@ int main (int argc, char** argv)
 		{
 			for (unsigned int j = 0; j < det_num; j++)
 			{
-        std::cout << "flag 4" << '\n';
+        std::cout << "flag 4 - computed IoU" << '\n';
 				// Use (1 - iou) because the hungarian algorithm computes a minimum-cost assignment.
-				iou_mx[i][j] = 1 - iou(predicted_dets[i], dets[dets.size() - 1][j].x);
-        std::cout << "minimum-cost: " << iou_mx[i][j] << std::endl;
+				iou_mx[i][j] = 1 - iou(predicted_dets[i], dets[dets.size() - 1][j].v_x_);
+        // std::cout << "minimum-cost: " << iou_mx[i][j] << std::endl;
 			}
 		}
 
@@ -403,6 +396,102 @@ int main (int argc, char** argv)
 		unmatchedDetections.clear();
 		allItems.clear();
 		matchedItems.clear();
+
+    if (det_num > trk_num) //	There are unmatched detections
+		{
+			for (unsigned int n = 0; n < det_num; n++)
+				allItems.insert(n);
+
+			for (unsigned int i = 0; i < trk_num; ++i)
+				matchedItems.insert(assignment[i]);
+
+			set_difference(allItems.begin(), allItems.end(),
+				matchedItems.begin(), matchedItems.end(),
+				insert_iterator<std::set<int> >(unmatchedDetections, unmatchedDetections.begin()));
+		}
+		else if (det_num < trk_num) // there are unmatched trajectory/predictions
+		{
+			for (unsigned int i = 0; i < trk_num; ++i)
+				if (assignment[i] == -1) // unassigned label will be set as -1 in the assignment algorithm
+					unmatchedTrajectories.insert(i);
+		}
+
+    // Filter out matched with low IoU
+    matchedPairs.clear();
+    for (unsigned int i = 0; i < trk_num; ++i)
+		{
+			if (assignment[i] == -1) // pass over invalid values
+				continue;
+			if (1 - iou_mx[i][assignment[i]] < iou_threshold)
+			{
+				unmatchedTrajectories.insert(i);
+				unmatchedDetections.insert(assignment[i]);
+			}
+			else{
+        matchedPairs.push_back(cv::Point(i, assignment[i]));
+      }
+		}
+
+    // Updating trackers
+    int detIdx, trkIdx;
+		for (unsigned int i = 0; i < matchedPairs.size(); i++)
+		{
+			trkIdx = matchedPairs[i].x;
+			detIdx = matchedPairs[i].y;
+			trackers[trkIdx].update(dets[dets.size() - 1][detIdx].v_x_);
+		}
+
+    // Initialise new trackers for unmatched detections
+    for (unsigned int umd = 0; umd < unmatchedDetections.size(); umd++)
+    {
+      KalmanBoxTracker trks(dets[dets.size() - 1][umd].v_x_);
+      trackers.push_back(trks);
+    }
+
+    // Get trackers result
+    Tracking_result.clear();
+    for (std::vector<KalmanBoxTracker>::iterator trk_res = trackers.begin(); trk_res != trackers.end();)
+    {
+      if ((trk_res->time_since_update < 1) && (trk_res->hit_streak >= min_hints || frame_count <= min_hints))
+      {
+        std::cout << "flag 6 - Results" << '\n';
+        Tracking_X x_get;
+        x_get.v_x_ = trk_res->get_state();
+        x_get.p_id = trk_res->id + 1;
+        Tracking_result.push_back(x_get);
+
+        trk_res++;
+      }
+      else
+      {
+        trk_res++;
+      }
+      // remove dead tracklet
+			if (trk_res != trackers.end() && trk_res->time_since_update > max_age){
+        trk_res = trackers.erase(trk_res);
+        viewer.removeAllShapes();
+        // std::stringstream bbox_name;
+        // bbox_name << "bbox_person_" << trk_res->id + 1;
+        //
+        // viewer.removeShape (bbox_name.str());
+      }
+    }
+
+    // Visualization
+    // viewer.removeAllShapes();
+    std::cout << "Tracking_result: " << Tracking_result.size() << std::endl;
+    for (unsigned int id_vis = 0; id_vis < Tracking_result.size(); id_vis++)
+    {
+      std::vector<float> rgb_(3);
+      int r_v = rand() % 255;
+      float v_cvsn = (1 / 255) * 10;
+
+      rgb_[0] = 0.5;
+      rgb_[1] = v_cvsn * id_vis;
+      rgb_[2] = v_cvsn * id_vis  * 2;
+
+      drawTCylinderBox(viewer, Tracking_result[id_vis].v_x_, Tracking_result[id_vis].p_id, rgb_);
+    }
 
     // The sequence has 948 frames.
     if (frame >= 948){

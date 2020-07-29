@@ -33,3 +33,12 @@ Now you can run the following command to run the simulation with the dataset
 ```sh
 $ rosrun cimat_sort_rgbd dataset_pcl_people_detection
 ```
+
+## Sort test on RGB-D images
+<p align="center"><img src="images/3d-sort.png" height=""></p>
+
+To test the SORT algorithm with EPFL-LAB dataset use the following command.
+
+```sh
+$ rosrun cimat_sort_rgbd sort_proofs
+```

@@ -279,6 +279,11 @@ int main (int argc, char** argv)
   people_detector.setClassifier(person_classifier);                // set person classifier
   people_detector.setPersonClusterLimits(min_height, max_height, 0.1, 8.0);  // set person classifier
   unsigned int n_dets = 0;
+  std::vector<double> range_colors(300);
+  for (int colors = 0; colors < 300; colors++){
+    int clrs = rand()%255;
+    range_colors[colors] = double(clrs / 255.0);
+  }
 
   // Main loop:
   while (true)
@@ -470,10 +475,6 @@ int main (int argc, char** argv)
 			if (trk_res != trackers.end() && trk_res->time_since_update > max_age){
         trk_res = trackers.erase(trk_res);
         viewer.removeAllShapes();
-        // std::stringstream bbox_name;
-        // bbox_name << "bbox_person_" << trk_res->id + 1;
-        //
-        // viewer.removeShape (bbox_name.str());
       }
     }
 
@@ -482,15 +483,15 @@ int main (int argc, char** argv)
     std::cout << "Tracking_result: " << Tracking_result.size() << std::endl;
     for (unsigned int id_vis = 0; id_vis < Tracking_result.size(); id_vis++)
     {
+      // std::cout << Tracking_result[id_vis].p_id << '\n';
       std::vector<float> rgb_(3);
-      int r_v = rand() % 255;
-      float v_cvsn = (1 / 255) * 10;
 
-      rgb_[0] = 0.5;
-      rgb_[1] = v_cvsn * id_vis;
-      rgb_[2] = v_cvsn * id_vis  * 2;
+      rgb_[0] = range_colors[Tracking_result[id_vis].p_id + 5];
+      rgb_[1] = range_colors[Tracking_result[id_vis].p_id + 10];
+      rgb_[2] = range_colors[Tracking_result[id_vis].p_id + 15];
 
       drawTCylinderBox(viewer, Tracking_result[id_vis].v_x_, Tracking_result[id_vis].p_id, rgb_);
+      // viewer.saveScreenshot("../images/3D-sort/3D-sort" + file_name);
     }
 
     // The sequence has 948 frames.
@@ -499,7 +500,9 @@ int main (int argc, char** argv)
     }
 
     // Increase frame for visualize point cloud of dataset
+    std::cout << "Frame: " << frame << std::endl;
     ++frame;
+
     cloud_mutex.unlock ();
   }
   return 0;

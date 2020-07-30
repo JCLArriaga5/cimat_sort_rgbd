@@ -1,5 +1,5 @@
 # cimat_sort_rgbd
-A ROS package to detect rgbd people with [SORT](https://github.com/abewley/sort) (Simple Online and Realtime Tracking) algorithm.
+A [ROS](http://wiki.ros.org/) package for tracking people in RGB-D images with [SORT](https://github.com/abewley/sort) (Simple Online and Realtime Tracking) algorithm.
 
 Developing ...
 
@@ -19,7 +19,7 @@ Execute following command:
 $ rosrun cimat_sort_rgbd pcl_people_detection
 ```
 
-## simulate_pcl_people_detection
+## simulate_pcl_people_detection.
 To simulate the plc detector, using an RGB-D image dataset it is necessary to download the dataset previously. For the simulation with a dataset, we make use of the EPFL-LAB dataset, [here](../master/test/pcl_people_detector/Dataset-Simulation/README.md) you can see where to download it.
 
 You must first copy the dataset into the folder `utils/dataset/` as follows:
@@ -34,10 +34,10 @@ Now you can run the following command to run the simulation with the dataset
 $ rosrun cimat_sort_rgbd dataset_pcl_people_detection
 ```
 
-## Sort test on RGB-D images
-<p align="center"><img src="images/3d-sort.png" height=""></p>
+## Sort test on RGB-D images with PCL detector.
+<p align="center"><img src="images/3d-sort.png" height="250"></p>
 
-To test the SORT algorithm with EPFL-LAB dataset use the following command.
+To test the SORT algorithm with EPFL-LAB dataset and PLC detector use the following command.
 
 ```sh
 $ rosrun cimat_sort_rgbd sort_proofs

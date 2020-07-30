@@ -279,8 +279,10 @@ int main (int argc, char** argv)
   people_detector.setClassifier(person_classifier);                // set person classifier
   people_detector.setPersonClusterLimits(min_height, max_height, 0.1, 8.0);  // set person classifier
   unsigned int n_dets = 0;
-  std::vector<double> range_colors(300);
-  for (int colors = 0; colors < 300; colors++){
+
+  // For colors of detections
+  std::vector<double> range_colors(600);
+  for (int colors = 0; colors < 600; colors++){
     int clrs = rand()%255;
     range_colors[colors] = double(clrs / 255.0);
   }

@@ -37,7 +37,7 @@ $ rosrun cimat_sort_rgbd dataset_pcl_people_detection
 ## Sort test on RGB-D images with PCL detector.
 <p align="center"><img src="images/3d-sort.png" height="250"></p>
 
-To test the SORT algorithm with EPFL-LAB dataset and PLC detector use the following command.
+To [test](../master/src/sort/sort_proofs.cpp) the SORT algorithm with EPFL-LAB dataset and PLC detector use the following command.
 
 ```sh
 $ rosrun cimat_sort_rgbd sort_proofs

@@ -1,4 +1,6 @@
 # cimat_sort_rgbd
+![size](https://img.shields.io/github/license/JCLArriaga5/cimat_sort_rgbd) ![size](https://img.shields.io/github/repo-size/JCLArriaga5/cimat_sort_rgbd)
+
 A [ROS](http://wiki.ros.org/) package for tracking people in RGB-D images with [SORT](https://github.com/abewley/sort) (Simple Online and Realtime Tracking) algorithm.
 
 Developing ...

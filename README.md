@@ -5,6 +5,11 @@ A [ROS](http://wiki.ros.org/) package for tracking people in RGB-D images with [
 
 Developing ...
 
+## Dependencies
+* [Ubuntu](https://ubuntu.com/) 16.04 LTS.
+* [PCL](https://github.com/PointCloudLibrary/pcl) 1.7.2.
+* [OpenCV](https://github.com/opencv/opencv) 3.3.1.
+
 ## Instalation
 ```sh
 $ cd ~/catkin_ws/src

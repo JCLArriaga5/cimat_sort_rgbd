@@ -64,6 +64,7 @@ pp_callback (const pcl::visualization::PointPickingEvent& event, void* args)
 PointCloudT::Ptr depth2cloud( cv::Mat rgb_image, cv::Mat depth_image )
 {
   // Parameters
+  float scale = 1000.0;
   float fx = 365.8046307762528; // Values with intrinsics matrix
   float fy = 365.80463336811664; // Values with intrinsics matrix
   float cx = 254.31510758228475, cy = 206.98513348550657; // Values with intrinsics matrix
@@ -79,7 +80,7 @@ PointCloudT::Ptr depth2cloud( cv::Mat rgb_image, cv::Mat depth_image )
       pcl::PointXYZRGB pt;
       if ( depth_image.at<unsigned short>(y, x) != 0 )
       {
-          pt.z = depth_image.at<unsigned short>(y, x) / 1000.0;
+          pt.z = depth_image.at<unsigned short>(y, x) / scale;
           pt.x = (x - cx) * pt.z / fx;
           pt.y = (y - cy) * pt.z / fy;
           pt.r = rgb_image.at<cv::Vec3b>(y, x)[2];

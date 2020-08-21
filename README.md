@@ -13,7 +13,7 @@ Developing ...
 ## Instalation
 ```sh
 $ cd ~/catkin_ws/src
-$ git clone https://github.com/CarlosLopezNubes5/cimat_sort_rgbd.git
+$ git clone https://github.com/JCLArriaga5/cimat_sort_rgbd.git
 $ cd ..
 $ catkin_make
 ```

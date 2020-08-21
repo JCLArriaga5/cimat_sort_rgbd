@@ -1,1 +1,3 @@
 ## Developing...
+
+We have used as a base the following [repository](https://github.com/mcximing/sort-cpp) which is a port in C ++ of SORT. We adapt it for RGB-D images and the PCL detector in the SORT [test](../master/src/sort/sort_proofs.cpp) for 3D images.

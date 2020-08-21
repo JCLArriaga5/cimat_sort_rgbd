@@ -65,8 +65,7 @@ PointCloudT::Ptr depth2cloud( cv::Mat rgb_image, cv::Mat depth_image )
 {
   // Parameters
   float scale = 1000.0;
-  float fx = 365.8046307762528; // Values with intrinsics matrix
-  float fy = 365.80463336811664; // Values with intrinsics matrix
+  float fx = 365.8046307762528, fy = 365.80463336811664; // Values with intrinsics matrix
   float cx = 254.31510758228475, cy = 206.98513348550657; // Values with intrinsics matrix
 
   // Conversion
@@ -80,23 +79,23 @@ PointCloudT::Ptr depth2cloud( cv::Mat rgb_image, cv::Mat depth_image )
       pcl::PointXYZRGB pt;
       if ( depth_image.at<unsigned short>(y, x) != 0 )
       {
-          pt.z = depth_image.at<unsigned short>(y, x) / scale;
-          pt.x = (x - cx) * pt.z / fx;
-          pt.y = (y - cy) * pt.z / fy;
-          pt.r = rgb_image.at<cv::Vec3b>(y, x)[2];
-          pt.g = rgb_image.at<cv::Vec3b>(y, x)[1];
-          pt.b = rgb_image.at<cv::Vec3b>(y, x)[0];
-          cloud_ptr->points.push_back( pt );
+        pt.z = depth_image.at<unsigned short>(y, x) / scale;
+        pt.x = (x - cx) * pt.z / fx;
+        pt.y = (y - cy) * pt.z / fy;
+        pt.r = rgb_image.at<cv::Vec3b>(y, x)[2];
+        pt.g = rgb_image.at<cv::Vec3b>(y, x)[1];
+        pt.b = rgb_image.at<cv::Vec3b>(y, x)[0];
+        cloud_ptr->points.push_back( pt );
       }
       else
       {
-          pt.z = 0;
-          pt.x = 0;
-          pt.y = 0;
-          pt.r = 0;
-          pt.g = 0;
-          pt.b = 0;
-          cloud_ptr->points.push_back( pt );
+        pt.z = 0;
+        pt.x = 0;
+        pt.y = 0;
+        pt.r = 0;
+        pt.g = 0;
+        pt.b = 0;
+        cloud_ptr->points.push_back( pt );
       }
     }
   }
@@ -110,6 +109,7 @@ int main (int argc, char** argv)
   float voxel_size = 0.06;
   float min_height = 1.0;
   float max_height = 1.87;
+  
   // Format of intrinsics matrix
   // K = [fx 0 cx;
   //      0 fy cy; intrinsics matrix

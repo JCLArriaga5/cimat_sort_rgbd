@@ -1,6 +1,6 @@
 ## Download RGB-D dataset
 
-You can download the RGB-D [EPFL-LAB](https://www.epfl.ch/labs/cvlab/data/data-rgbd-pedestrian/) dataset for testing [here](https://drive.switch.ch/index.php/s/Qd7H855d0w4fptO).
+To simulate the plc detector, using an RGB-D image dataset it is necessary to download the dataset previously. For the simulation with a dataset, we make use of the EPFL-LAB dataset, [here](../master/utils/dataset/README.md) you can see where to download it.
 
 ## Convert depth images to point cloud
 

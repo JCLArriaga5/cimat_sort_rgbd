@@ -222,7 +222,7 @@ int main (int argc, char** argv)
   float voxel_size = 0.06;
   float min_height = 1.0;
   float max_height = 1.87; //1.87
-  
+
   // Format of intrinsics matrix
   // K = [fx 0 cx;
   //      0 fy cy; intrinsics matrix
@@ -352,7 +352,6 @@ int main (int argc, char** argv)
 			// initialize kalman trackers using first detections.
 			for (unsigned int i = 0; i < k; i++)
 			{
-        std::cout << "flag 1 - initialize Kalman" << '\n';
         KalmanBoxTracker trk(dets[dets.size() - 1][i].v_x_);
         trackers.push_back(trk);
 			}
@@ -364,12 +363,10 @@ int main (int argc, char** argv)
 		{
 			std::vector<float> pX = pred->predict();
       if (pX[0] != 0 && pX[1] != 0 && pX[2] != 0){
-        std::cout << "flag 2 - predicted" << '\n';
         predicted_dets.push_back(pX);
         pred++;
       }
       else{
-        std::cout << "flag 3 - erase predictions" << '\n';
         pred = trackers.erase(pred);
       }
 		}
@@ -384,7 +381,6 @@ int main (int argc, char** argv)
 		{
 			for (unsigned int j = 0; j < det_num; j++)
 			{
-        std::cout << "flag 4 - computed IoU" << '\n';
 				// Use (1 - iou) because the hungarian algorithm computes a minimum-cost assignment.
 				iou_mx[i][j] = 1 - iou(predicted_dets[i], dets[dets.size() - 1][j].v_x_);
         // std::cout << "minimum-cost: " << iou_mx[i][j] << std::endl;
@@ -395,7 +391,6 @@ int main (int argc, char** argv)
     HungarianAlgorithm linear_assignment;
 		assignment.clear();
     if  (iou_mx.size() != 0){
-      std::cout << "flag 5 - Hungarian" << '\n';
       linear_assignment.Solve(iou_mx, assignment);
     }
 
@@ -462,7 +457,6 @@ int main (int argc, char** argv)
     {
       if ((trk_res->time_since_update < 1) && (trk_res->hit_streak >= min_hints || frame_count <= min_hints))
       {
-        std::cout << "flag 6 - Results" << '\n';
         Tracking_X x_get;
         x_get.v_x_ = trk_res->get_state();
         x_get.p_id = trk_res->id + 1;
@@ -503,7 +497,6 @@ int main (int argc, char** argv)
     }
 
     // Increase frame for visualize point cloud of dataset
-    std::cout << "Frame: " << frame << std::endl;
     ++frame;
 
     cloud_mutex.unlock ();

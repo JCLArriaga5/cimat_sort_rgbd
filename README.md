@@ -40,5 +40,5 @@ $ rosrun cimat_sort_rgbd dataset_pcl_people_detection
 To [test](../master/src/sort/sort_proofs.cpp) the SORT algorithm with EPFL-LAB dataset and PLC detector use the following command.
 
 ```sh
-$ rosrun cimat_sort_rgbd sort_proofs
+$ rosrun cimat_sort_rgbd dataset_sort_test
 ```

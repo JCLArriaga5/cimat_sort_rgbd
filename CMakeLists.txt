@@ -27,11 +27,9 @@ link_directories(${PCL_LIBRARY_DIRS} ${OPENCV_LIBRARY_DIRS} ${Eigen_INCLUDE_DIRS
 add_definitions(${PCL_DEFINITIONS} ${OPENCV_DEFINITIONS} ${Eigen_INCLUDE_DIRS})
 
 add_executable(pcl_people_detection test/pcl_people_detector/pcl_people_detection.cpp)
-add_executable(gazebo_pcl_people_detection test/pcl_people_detector/Gazebo-Simulation/gazebo_pcl_people_detection.cpp)
 add_executable(dataset_pcl_people_detection test/pcl_people_detector/Dataset-Simulation/dataset_pcl_people_detection.cpp)
-add_executable(sort_proofs src/sort/sort_proofs.cpp ${SOURCE_FILES})
+add_executable(sort_proofs src/sort/dataset_sort_test.cpp ${SOURCE_FILES})
 
 target_link_libraries(pcl_people_detection ${catkin_LIBRARIES})
-target_link_libraries(gazebo_pcl_people_detection ${catkin_LIBRARIES})
 target_link_libraries(dataset_pcl_people_detection ${PCL_LIBRARIES} ${OpenCV_LIBS})
-target_link_libraries(sort_proofs ${PCL_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(dataset_sort_test ${PCL_LIBRARIES} ${OpenCV_LIBS})

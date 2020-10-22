@@ -3,7 +3,9 @@
 
 A [ROS](http://wiki.ros.org/) package for tracking people in RGB-D images with [SORT](https://github.com/abewley/sort) (Simple Online and Realtime Tracking) algorithm.
 
-Developing ...
+To obtain a bachelor's degree through a stay at CIMAT, this project was carried out. Under the supervision of a CIMAT researcher.
+
+Developing improvements for the project ...
 
 ## Dependencies
 * [Ubuntu](https://ubuntu.com/) 16.04 LTS.

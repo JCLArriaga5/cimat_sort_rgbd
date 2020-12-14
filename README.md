@@ -37,10 +37,16 @@ $ rosrun cimat_sort_rgbd dataset_pcl_people_detection
 ```
 
 ## Sort test on RGB-D images with PCL detector.
-To [test](../master/src/sort/sort_proofs.cpp) the SORT algorithm with EPFL-LAB dataset and PLC detector use the following command.
+
+The state vector of each objective for the Kalman filter that was used was the following:
+
+<p align="center"><img src="images\state_vector_rgbd.png" width="300" height="30"></p>
+
+where <img src="https://render.githubusercontent.com/render/math?math=(u, v, w)"> are the coordinates of the centroid of the enclosing box or cylinder, taken from the top or bottom. The height <img src="https://render.githubusercontent.com/render/math?math=h"> the <img src="https://render.githubusercontent.com/render/math?math=$\gamma$"> radius were taken as constants, so <img src="https://render.githubusercontent.com/render/math?math=$(\dot{u}, \dot{v}, \dot{w})$"> are the respective velocities of the centroid. For the data association, an IoU of the upper circles of the cylinder of each objective was used.
 
 <p align="center"><img src="images/3d-sort.png" height="250"></p>
 
+To [test](../master/src/sort/sort_proofs.cpp) the SORT algorithm with EPFL-LAB dataset and PLC detector use the following command.
 ```sh
 $ rosrun cimat_sort_rgbd dataset_sort_test
 ```
